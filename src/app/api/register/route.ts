@@ -4,9 +4,9 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
     try {
-        const { name, email, password } = await req.json();
+        const { name, username, email, password } = await req.json();
 
-        if (!name || !email || !password) {
+        if (!name || !username || !email || !password) {
             return NextResponse.json(
                 { message: "Missing required fields" },
                 { status: 400 }
@@ -20,14 +20,32 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        // Clean username (lowercase, remove spaces)
+        let cleanUsername = username.toLowerCase().replace(/\s+/g, '');
+        // Prefix with @ if not provided
+        if (!cleanUsername.startsWith('@')) {
+            cleanUsername = `@${cleanUsername}`;
+        }
+
         // Check if user already exists
-        const existingUser = await prisma.user.findUnique({
+        const existingEmail = await prisma.user.findUnique({
             where: { email }
         });
 
-        if (existingUser) {
+        if (existingEmail) {
             return NextResponse.json(
                 { message: "User with this email already exists" },
+                { status: 409 }
+            );
+        }
+
+        const existingUsername = await prisma.user.findUnique({
+            where: { username: cleanUsername }
+        });
+
+        if (existingUsername) {
+            return NextResponse.json(
+                { message: "Username is already taken" },
                 { status: 409 }
             );
         }
@@ -38,6 +56,7 @@ export async function POST(req: NextRequest) {
         const user = await prisma.user.create({
             data: {
                 name,
+                username: cleanUsername,
                 email,
                 hashedPassword,
                 // The role "USER" is set by default in the Prisma schema

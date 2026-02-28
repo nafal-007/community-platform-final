@@ -2,65 +2,89 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { LogOut, User, Bell, Search } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { LogOut, Bell, Search, Home, MessageSquare, Settings } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { Logo } from "@/components/ui/Logo";
 
 export function Topbar() {
     const { data: session, status } = useSession();
     const pathname = usePathname();
+    const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState("");
 
     if (pathname === '/login' || pathname === '/register') return null;
 
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            const cleanQuery = searchQuery.trim().replace('@', '');
+            router.push(`/u/${cleanQuery}`);
+            setSearchQuery("");
+        }
+    };
+
     return (
-        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-surface-200">
-            <div className="flex items-center justify-between h-16 px-4 md:px-6">
+        <header className="sticky top-0 z-40 bg-surface-50 border-b border-surface-100 h-16 flex-none">
+            <div className="flex items-center justify-between h-full px-4 md:px-6 max-w-[1600px] mx-auto">
 
-                {/* Mobile Logo */}
-                <div className="md:hidden flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-brand-400 rounded-lg flex items-center justify-center text-white font-bold">
-                        C
-                    </div>
-                    <span className="font-bold text-lg">CommuniNet</span>
-                </div>
+                {/* Left: Branding & Search */}
+                <div className="flex items-center gap-8 w-1/3">
+                    <Link href="/" className="flex items-center gap-2 transition-transform hover:opacity-90">
+                        <Logo iconSize="w-8 h-8" textSize="text-3xl" dark={true} />
+                    </Link>
 
-                {/* Global Search Bar */}
-                <div className="hidden md:flex flex-1 max-w-xl px-4">
-                    <div className="relative w-full">
+                    <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-sm relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Search communities, jobs, schemes..."
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Find @username"
+                            className="w-full pl-10 pr-4 py-2 bg-surface-100 border-none rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-brand-500 text-surface-900 placeholder:text-slate-500 transition-all font-medium"
                         />
-                    </div>
+                    </form>
                 </div>
 
-                {/* Auth / Profile Actions */}
-                <div className="flex items-center gap-4 ml-auto">
+                {/* Center: Main Navigation Icons */}
+                <div className="hidden md:flex items-center justify-center gap-2 w-1/3">
+                    <Link href="/" className="p-3 text-brand-500 bg-brand-500/10 rounded-xl transition-all">
+                        <Home className="w-5 h-5" />
+                    </Link>
+                    <Link href="/communities" className="p-3 text-slate-400 hover:text-white hover:bg-surface-100 rounded-xl transition-all">
+                        <MessageSquare className="w-5 h-5" />
+                    </Link>
+                    <Link href="/settings" className="p-3 text-slate-400 hover:text-white hover:bg-surface-100 rounded-xl transition-all">
+                        <Settings className="w-5 h-5" />
+                    </Link>
+                </div>
+
+                {/* Right: Auth & Profile */}
+                <div className="flex items-center justify-end gap-4 w-1/3">
                     {status === "loading" ? (
-                        <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div>
+                        <div className="w-8 h-8 rounded-full bg-surface-100 animate-pulse"></div>
                     ) : session ? (
                         <div className="flex items-center gap-4">
-                            <button className="relative p-2 text-slate-500 hover:text-brand-600 transition-colors rounded-full hover:bg-brand-50">
+                            <button className="relative p-2 text-slate-400 hover:text-white transition-colors rounded-xl hover:bg-surface-100">
                                 <Bell className="w-5 h-5" />
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-500 rounded-full"></span>
                             </button>
 
-                            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
-                                <div className="hidden md:block text-right">
-                                    <p className="text-sm font-semibold text-slate-700">{session.user?.name}</p>
-                                    <p className="text-xs text-slate-500 capitalize">{session.user?.role?.toLowerCase() || 'Member'}</p>
-                                </div>
+                            <div className="flex items-center gap-3 pl-4 border-l border-surface-100">
                                 {session.user?.image ? (
-                                    <img src={session.user.image} alt="Avatar" className="w-9 h-9 rounded-full ring-2 ring-white shadow-sm" />
+                                    <img src={session.user.image} alt="Avatar" className="w-9 h-9 rounded-full ring-2 ring-surface-50 shadow-sm" />
                                 ) : (
-                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center text-brand-700 font-bold shadow-sm">
+                                    <div className="w-9 h-9 rounded-full bg-surface-800 flex items-center justify-center text-white font-bold shadow-sm border border-surface-100">
                                         {session.user?.name?.[0] || 'U'}
                                     </div>
                                 )}
+                                <div className="hidden md:block text-left mr-2">
+                                    <p className="text-sm font-bold text-white leading-tight">{session.user?.name}</p>
+                                    <p className="text-[11px] text-brand-500 font-medium tracking-wide">{(session.user as any)?.username || `@${session.user?.name?.replace(/\s+/g, '').toLowerCase()}`}</p>
+                                </div>
                                 <button
                                     onClick={() => signOut()}
-                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all md:ml-2"
+                                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-surface-100 rounded-xl transition-all"
                                     title="Logout"
                                 >
                                     <LogOut className="w-4 h-4" />
@@ -69,10 +93,10 @@ export function Topbar() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2">
+                            <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white px-3 py-2 transition-colors">
                                 Log in
                             </Link>
-                            <Link href="/register" className="text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-full shadow-sm transition-all hover:shadow-md">
+                            <Link href="/register" className="text-sm font-bold bg-brand-500 hover:bg-brand-600 text-black px-5 py-2 rounded-xl transition-all">
                                 Register
                             </Link>
                         </div>

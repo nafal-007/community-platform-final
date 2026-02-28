@@ -1,0 +1,148 @@
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { Users, Info, ShieldCheck } from "lucide-react";
+import CreatePostForm from "@/components/post/CreatePostForm";
+import PostCard from "@/components/post/PostCard";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export default async function CommunityPage({ params }: { params: Promise<{ name: string }> }) {
+    const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
+    const decodedName = decodeURIComponent(resolvedParams.name);
+
+    // Fetch the community
+    const community = await prisma.community.findFirst({
+        where: {
+            name: {
+                equals: decodedName,
+            }
+        },
+        include: {
+            _count: {
+                select: { members: true }
+            },
+            posts: {
+                include: {
+                    author: {
+                        select: { name: true, image: true, role: true }
+                    },
+                    likes: session?.user?.id ? {
+                        where: { userId: session.user.id }
+                    } : false,
+                    comments: {
+                        include: {
+                            author: {
+                                select: { name: true, image: true }
+                            }
+                        },
+                        orderBy: { createdAt: 'asc' }
+                    },
+                    _count: {
+                        select: { comments: true, likes: true }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            }
+        }
+    });
+
+    if (!community) {
+        return notFound();
+    }
+
+    return (
+        <div className="max-w-5xl mx-auto w-full pt-6 pb-20 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            {/* Main Feed Column */}
+            <div className="lg:col-span-3 space-y-6">
+
+                {/* Community Header Mobile (Hidden on Desktop) */}
+                <div className="lg:hidden glass-panel p-6 mb-6 border-l-4 border-l-brand-500 rounded-none">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-12 h-12 bg-surface-100 rounded-xl flex items-center justify-center text-brand-500 font-bold text-xl">
+                            {community.name[0].toUpperCase()}
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-white">c/{community.name}</h1>
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide bg-surface-100 px-2 py-1 rounded-md">{community.category}</span>
+                        </div>
+                    </div>
+                    <p className="text-slate-400 text-sm mt-3">{community.description}</p>
+                </div>
+
+                {/* Create Post Area */}
+                {session ? (
+                    <CreatePostForm communityId={community.id} />
+                ) : (
+                    <div className="glass-panel p-6 text-center">
+                        <p className="text-slate-400">Please log in to post in this community.</p>
+                    </div>
+                )}
+
+                <div className="flex items-center justify-between mt-8 mb-4">
+                    <h3 className="font-bold text-lg text-white">Community Feed</h3>
+                </div>
+
+                {/* Posts Feed */}
+                <div className="space-y-4">
+                    {community.posts.length === 0 ? (
+                        <div className="glass-panel p-12 text-center flex flex-col items-center justify-center border-dashed">
+                            <Info className="w-12 h-12 text-surface-100 mb-4" />
+                            <h4 className="text-lg font-bold text-white mb-2">No posts yet</h4>
+                            <p className="text-slate-400 text-sm max-w-sm">
+                                Be the first to share something with c/{community.name}!
+                            </p>
+                        </div>
+                    ) : (
+                        community.posts.map(post => (
+                            <PostCard key={post.id} post={post} />
+                        ))
+                    )}
+                </div>
+
+            </div>
+
+            {/* Right Sidebar - Community Info */}
+            <div className="hidden lg:block lg:col-span-1 space-y-6">
+                <div className="glass-panel p-6 sticky top-24">
+                    <div className="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-black font-bold text-3xl mb-4 shadow-lg shadow-brand-500/20">
+                        {community.name[0].toUpperCase()}
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-1">c/{community.name}</h2>
+                    <div className="inline-block px-2.5 py-1 bg-surface-100 text-brand-500 text-xs font-bold rounded-lg uppercase tracking-wide mb-4">
+                        {community.category}
+                    </div>
+
+                    <p className="text-sm text-slate-400 mb-6 pb-6 border-b border-surface-100">
+                        {community.description}
+                    </p>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3 text-slate-300">
+                            <Users className="w-5 h-5 text-brand-500" />
+                            <div>
+                                <div className="font-bold text-white">{community._count.members}</div>
+                                <div className="text-xs text-slate-500">Members</div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 text-slate-300">
+                            <ShieldCheck className="w-5 h-5 text-brand-500" />
+                            <div>
+                                <div className="font-bold text-white">Verified</div>
+                                <div className="text-xs text-slate-500">Community Status</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className="w-full mt-6 py-2.5 bg-surface-50 hover:bg-surface-100 text-white font-bold rounded-xl transition-colors border border-surface-100">
+                        Joined
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    );
+}

@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-900: #1e3a8a;
+  --color-brand-50: #fbfedf;
+  --color-brand-100: #f6fcb3;
+  --color-brand-500: #CCFF00;
+  --color-brand-600: #aadd00;
+  --color-brand-900: #445500;
 
-  --color-surface-50: #f8fafc;
-  --color-surface-100: #f1f5f9;
-  --color-surface-800: #1e293b;
-  --color-surface-900: #0f172a;
+  --color-surface-50: #101113;
+  --color-surface-100: #18191b;
+  --color-surface-800: #1E1F21;
+  --color-surface-900: #ffffff;
 }
 
 @layer base {
@@ -23,6 +23,6 @@
 
 @layer utilities {
   .glass-panel {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl;
+    @apply bg-surface-800 border-surface-100 shadow-sm rounded-2xl;
   }
 }

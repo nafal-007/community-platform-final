@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -37,18 +38,12 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-surface-50 p-4 relative overflow-hidden">
-            {/* Decorative Blobs */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-400/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-400/20 rounded-full blur-3xl" />
-
             <div className="w-full max-w-md">
                 {/* App Branding */}
-                <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-brand-600 to-brand-400 rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4 shadow-lg shadow-brand-500/30">
-                        C
-                    </div>
-                    <h1 className="text-3xl font-bold text-surface-900 tracking-tight">Welcome back</h1>
-                    <p className="text-surface-500 mt-2">Log in to your CommuniNet account</p>
+                <div className="flex flex-col items-center mb-10">
+                    <Logo className="mb-4" iconSize="w-16 h-16" textSize="text-5xl" dark={true} />
+                    <h1 className="text-3xl font-bold text-white tracking-tight">Welcome back</h1>
+                    <p className="text-slate-400 mt-2">Log in to your US account</p>
                 </div>
 
                 {/* Login Form Card */}
@@ -62,14 +57,14 @@ export default function LoginPage() {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 block">Email Address</label>
+                            <label className="text-sm font-bold text-white block">Email Address</label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                                 <input
                                     type="email"
                                     name="email"
                                     required
-                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm mb-1"
+                                    className="w-full pl-12 pr-4 py-3 bg-surface-50 border border-surface-100 text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm mb-1 placeholder:text-slate-600"
                                     placeholder="name@example.com"
                                 />
                             </div>
@@ -77,16 +72,16 @@ export default function LoginPage() {
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-slate-700 block">Password</label>
-                                <Link href="#" className="text-xs font-semibold text-brand-600 hover:text-brand-700">Forgot password?</Link>
+                                <label className="text-sm font-bold text-white block">Password</label>
+                                <Link href="#" className="text-xs font-bold text-brand-500 hover:text-brand-600">Forgot password?</Link>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                                 <input
                                     type="password"
                                     name="password"
                                     required
-                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm"
+                                    className="w-full pl-12 pr-4 py-3 bg-surface-50 border border-surface-100 text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm placeholder:text-slate-600"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -95,10 +90,10 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-lg font-medium transition-all shadow-sm hover:shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-black py-3 rounded-xl font-bold transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed mt-4"
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign in"}
-                            {!loading && <ArrowRight className="w-4 h-4" />}
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin text-black" /> : "Sign in"}
+                            {!loading && <ArrowRight className="w-4 h-4 text-black" />}
                         </button>
                     </form>
 
@@ -112,8 +107,8 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mt-6 flex justify-center text-sm">
-                        <span className="text-slate-500">Don't have an account? </span>
-                        <Link href="/register" className="ml-1 font-semibold text-brand-600 hover:text-brand-700">
+                        <span className="text-slate-400">Don't have an account? </span>
+                        <Link href="/register" className="ml-1 font-bold text-brand-500 hover:text-brand-600">
                             Sign up
                         </Link>
                     </div>
