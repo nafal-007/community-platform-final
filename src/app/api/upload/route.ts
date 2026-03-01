@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { writeFile } from "fs/promises";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
+import cloudinary from "@/lib/cloudinary";
 
 export async function POST(req: NextRequest) {
     try {
@@ -21,17 +19,22 @@ export async function POST(req: NextRequest) {
 
         const buffer = Buffer.from(await file.arrayBuffer());
 
-        // Ensure unique filename
-        const filename = `${uuidv4()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-        const uploadDir = path.join(process.cwd(), "public/uploads");
+        // Upload to Cloudinary using a promise-wrapped stream
+        const uploadResponse = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: "community_platform",
+                    resource_type: "auto",
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            uploadStream.end(buffer);
+        }) as any;
 
-        // Write file to public/uploads
-        await writeFile(path.join(uploadDir, filename), buffer);
-
-        // Return the public URL
-        const imageUrl = `/uploads/${filename}`;
-
-        return NextResponse.json({ url: imageUrl }, { status: 200 });
+        return NextResponse.json({ url: uploadResponse.secure_url }, { status: 200 });
     } catch (error) {
         console.error("Upload error:", error);
         return NextResponse.json({ message: "Internal server error" }, { status: 500 });
