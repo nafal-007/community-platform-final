@@ -96,6 +96,19 @@ export async function POST(req: Request) {
 
     } catch (error: any) {
         console.error("Error sending OTP:", error);
-        return NextResponse.json({ error: "Failed to send verification code." }, { status: 500 });
+
+        let errorMessage = "Failed to send verification code.";
+
+        // Differentiate errors for easier debugging
+        if (error.code?.startsWith('P')) {
+            errorMessage = `Database Error (${error.code}): Ensure your DATABASE_URL is correct and tables are created.`;
+        } else if (error.message?.includes("SMTP") || error.command === 'CONN') {
+            errorMessage = "Email Server Error: Check your SMTP settings (Host, User, Pass).";
+        }
+
+        return NextResponse.json({
+            error: errorMessage,
+            devDetails: error.message
+        }, { status: 500 });
     }
 }
