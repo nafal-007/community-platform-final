@@ -9,8 +9,10 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
     const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
     const [content, setContent] = useState("");
     const [title, setTitle] = useState("");
+    const [aiSummary, setAiSummary] = useState<string | null>(null);
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isSummarizing, setIsSummarizing] = useState(false);
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
     // When clicking "New Note"
@@ -18,6 +20,7 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
         setCurrentNoteId(null);
         setContent("");
         setTitle("");
+        setAiSummary(null);
         setSaveStatus("idle");
     };
 
@@ -26,11 +29,12 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
         setCurrentNoteId(note.id);
         setContent(note.rawContent);
         setTitle(note.title || "Untitled Note");
+        setAiSummary(note.aiSummary || null);
         setSaveStatus("idle");
     };
 
     const handleSave = async (isAutoSave = false) => {
-        if (!content.trim() && !title.trim() && !isSaving) return;
+        if ((!content.trim() && !title.trim()) || isSaving) return;
         setIsSaving(true);
         if (!isAutoSave) setSaveStatus("saving");
 
@@ -59,7 +63,7 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
                 setNotes(prev => {
                     const exists = prev.find(n => n.id === savedNote.id);
                     if (exists) {
-                        return prev.map(n => n.id === savedNote.id ? savedNote : n).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                        return prev.map(n => n.id === savedNote.id ? { ...savedNote, aiSummary: aiSummary } : n).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     } else {
                         return [savedNote, ...prev];
                     }
@@ -74,6 +78,32 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
             setSaveStatus("error");
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleSummarize = async () => {
+        if (!currentNoteId) return;
+        setIsSummarizing(true);
+
+        try {
+            const res = await fetch(`/api/notes/${currentNoteId}/summarize`, {
+                method: "POST"
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setAiSummary(data.summary);
+
+                // Update local notes cache
+                setNotes(prev => prev.map(n => n.id === currentNoteId ? { ...n, aiSummary: data.summary } : n));
+            } else {
+                setSaveStatus("error");
+            }
+        } catch (error) {
+            console.error("Failed to summarize", error);
+            setSaveStatus("error");
+        } finally {
+            setIsSummarizing(false);
         }
     };
 
@@ -119,18 +149,35 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
                                 </p>
                             </div>
 
-                            <button
-                                onClick={() => handleSave(false)}
-                                disabled={isSaving || (!content.trim() && !title.trim())}
-                                className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-colors shadow-lg shadow-brand-500/20"
-                            >
-                                {isSaving ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <Save className="w-5 h-5" />
+                            <div className="flex items-center gap-2 shrink-0">
+                                {currentNoteId && (
+                                    <button
+                                        onClick={handleSummarize}
+                                        disabled={isSummarizing || !content.trim()}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-surface-800 border border-surface-100 hover:bg-surface-100 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors"
+                                    >
+                                        {isSummarizing ? (
+                                            <Loader2 className="w-4 h-4 text-brand-500 animate-spin" />
+                                        ) : (
+                                            <span className="text-xl leading-none">✨</span>
+                                        )}
+                                        {isSummarizing ? "Thinking..." : "Summarize with AI"}
+                                    </button>
                                 )}
-                                {isSaving ? "Saving..." : "Save Note"}
-                            </button>
+
+                                <button
+                                    onClick={() => handleSave(false)}
+                                    disabled={isSaving || (!content.trim() && !title.trim())}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-sm rounded-xl transition-colors shadow-lg shadow-brand-500/20"
+                                >
+                                    {isSaving ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Save className="w-4 h-4" />
+                                    )}
+                                    {isSaving ? "Saving..." : "Save Note"}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -148,13 +195,35 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
                         )}
                     </div>
 
+                    {/* AI Summary Panel */}
+                    {(aiSummary || isSummarizing) && (
+                        <div className="mx-6 mb-4 mt-2">
+                            <div className="bg-brand-500/5 text-brand-500 border border-brand-500/20 rounded-xl p-5 shadow-inner">
+                                <h4 className="font-bold mb-3 flex items-center gap-2">
+                                    <span className="text-xl leading-none">✨</span>
+                                    AI Generated Summary
+                                </h4>
+                                {isSummarizing ? (
+                                    <div className="flex items-center gap-3 text-slate-400 text-sm">
+                                        <Loader2 className="w-4 h-4 animate-spin text-brand-500" />
+                                        <span>Gemini is reading your notes and extracting concepts...</span>
+                                    </div>
+                                ) : (
+                                    <div className="text-sm text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
+                                        {aiSummary}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Textarea */}
                     <div className="flex-1 p-6 pt-0">
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Start writing your learning notes, concepts, or ideas here..."
-                            className="w-full h-full min-h-[400px] bg-transparent text-slate-200 placeholder-slate-500 focus:outline-none resize-none font-mono text-sm leading-relaxed custom-scrollbar"
+                            className="w-full h-full min-h-[400px] bg-surface-50/50 border border-surface-100/50 rounded-xl p-4 text-surface-900 placeholder:text-slate-500 focus:outline-none focus:border-brand-500/30 resize-none font-mono text-sm leading-relaxed custom-scrollbar transition-all"
                         />
                     </div>
                 </div>
@@ -189,8 +258,8 @@ export default function DailyNotesClient({ pastNotes: initialPastNotes }: { past
                                     key={note.id}
                                     onClick={() => handleSelectNote(note)}
                                     className={`p-4 border rounded-xl transition-all cursor-pointer group ${currentNoteId === note.id
-                                            ? "bg-brand-500/10 border-brand-500 border-l-4"
-                                            : "bg-surface-800/50 border-surface-100 hover:border-brand-500/50"
+                                        ? "bg-brand-500/10 border-brand-500 border-l-4"
+                                        : "bg-surface-800/50 border-surface-100 hover:border-brand-500/50"
                                         }`}
                                 >
                                     <div className="flex items-start justify-between mb-2">

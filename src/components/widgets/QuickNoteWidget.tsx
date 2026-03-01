@@ -78,7 +78,7 @@ export function QuickNoteWidget() {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-brand-500" />
-                    <h3 className="font-bold text-sm text-white">Quick Note</h3>
+                    <h3 className="font-bold text-sm text-surface-900">Quick Note</h3>
                 </div>
                 <div className="text-xs font-bold text-slate-500">
                     {saveStatus === "saving" && <Loader2 className="w-4 h-4 text-brand-500 animate-spin" />}
@@ -94,7 +94,7 @@ export function QuickNoteWidget() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Type your notes here..."
-                className="flex-1 w-full bg-surface-900 border border-surface-100 rounded-xl p-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-colors resize-none font-mono text-sm leading-relaxed custom-scrollbar"
+                className="flex-1 w-full bg-surface-50/50 border border-surface-100 rounded-xl p-3 text-surface-900 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-colors resize-none font-mono text-sm leading-relaxed custom-scrollbar"
             />
         </div>
     );

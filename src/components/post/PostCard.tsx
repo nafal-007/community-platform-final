@@ -117,6 +117,12 @@ export default function PostCard({ post }: { post: any }) {
                     {post.content}
                 </p>
 
+                {post.imageUrl && (
+                    <div className="w-full mb-4 rounded-xl overflow-hidden border border-surface-100 bg-surface-900 flex justify-center items-center">
+                        <img src={post.imageUrl} alt="Post attachment" className="w-full h-auto object-contain max-h-[500px]" />
+                    </div>
+                )}
+
                 <div className="flex items-center gap-6 mt-4 pt-4 border-t border-surface-100">
                     <button
                         onClick={handleLike}

@@ -17,7 +17,7 @@ export async function POST(
             );
         }
 
-        const { title, content } = await req.json();
+        const { title, content, imageUrl } = await req.json();
 
         if (!title || !content) {
             return NextResponse.json(
@@ -43,6 +43,7 @@ export async function POST(
             data: {
                 title,
                 content,
+                imageUrl,
                 authorId: session.user.id,
                 communityId: community.id,
                 validityScore: 0 // Base score

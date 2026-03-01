@@ -7,10 +7,24 @@
   --color-brand-600: #aadd00;
   --color-brand-900: #445500;
 
-  --color-surface-50: #101113;
-  --color-surface-100: #18191b;
-  --color-surface-800: #1E1F21;
-  --color-surface-900: #ffffff;
+  --color-surface-50: var(--surface-50);
+  --color-surface-100: var(--surface-100);
+  --color-surface-800: var(--surface-800);
+  --color-surface-900: var(--surface-900);
+}
+
+:root {
+  --surface-50: #ffffff;
+  --surface-100: #f1f5f9;
+  --surface-800: #ffffff;
+  --surface-900: #0f172a;
+}
+
+[data-theme='dark'] {
+  --surface-50: #101113;
+  --surface-100: #18191b;
+  --surface-800: #1E1F21;
+  --surface-900: #ffffff;
 }
 
 @layer base {

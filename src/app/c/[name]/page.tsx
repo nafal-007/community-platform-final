@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { Users, Info, ShieldCheck } from "lucide-react";
+import { Users, Info, ShieldCheck, Lock, CheckCircle, Clock } from "lucide-react";
 import CreatePostForm from "@/components/post/CreatePostForm";
 import PostCard from "@/components/post/PostCard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import JoinCommunityButton from "@/components/community/JoinCommunityButton";
 
 export default async function CommunityPage({ params }: { params: Promise<{ name: string }> }) {
     const session = await getServerSession(authOptions);
@@ -22,6 +23,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
             _count: {
                 select: { members: true }
             },
+            members: session ? {
+                where: { userId: session.user.id }
+            } : false,
+            joinRequests: session ? {
+                where: { userId: session.user.id }
+            } : false,
             posts: {
                 include: {
                     author: {
@@ -53,6 +60,11 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
         return notFound();
     }
 
+    const isMember = session ? community.members.length > 0 : false;
+    const isAdmin = session?.user?.role === "ADMIN";
+    const hasAccess = !community.isPrivate || isMember || isAdmin;
+    const existingRequest = community.joinRequests?.[0]?.status || null;
+
     return (
         <div className="max-w-5xl mx-auto w-full pt-6 pb-20 grid grid-cols-1 lg:grid-cols-4 gap-6">
 
@@ -66,42 +78,71 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
                             {community.name[0].toUpperCase()}
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-white">c/{community.name}</h1>
+                            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                                c/{community.name}
+                                {community.isPrivate && <Lock className="w-4 h-4 text-slate-400" />}
+                            </h1>
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-wide bg-surface-100 px-2 py-1 rounded-md">{community.category}</span>
                         </div>
                     </div>
                     <p className="text-slate-400 text-sm mt-3">{community.description}</p>
                 </div>
 
-                {/* Create Post Area */}
-                {session ? (
-                    <CreatePostForm communityId={community.id} />
-                ) : (
-                    <div className="glass-panel p-6 text-center">
-                        <p className="text-slate-400">Please log in to post in this community.</p>
-                    </div>
-                )}
-
-                <div className="flex items-center justify-between mt-8 mb-4">
-                    <h3 className="font-bold text-lg text-white">Community Feed</h3>
-                </div>
-
-                {/* Posts Feed */}
-                <div className="space-y-4">
-                    {community.posts.length === 0 ? (
-                        <div className="glass-panel p-12 text-center flex flex-col items-center justify-center border-dashed">
-                            <Info className="w-12 h-12 text-surface-100 mb-4" />
-                            <h4 className="text-lg font-bold text-white mb-2">No posts yet</h4>
-                            <p className="text-slate-400 text-sm max-w-sm">
-                                Be the first to share something with c/{community.name}!
-                            </p>
+                {!hasAccess ? (
+                    <div className="glass-panel p-16 flex flex-col items-center justify-center text-center border-dashed">
+                        <div className="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mb-6 border border-surface-200">
+                            <Lock className="w-8 h-8 text-brand-500" />
                         </div>
-                    ) : (
-                        community.posts.map(post => (
-                            <PostCard key={post.id} post={post} />
-                        ))
-                    )}
-                </div>
+                        <h2 className="text-2xl font-bold text-white mb-3">This Community is Private</h2>
+                        <p className="text-slate-400 max-w-md mb-8">
+                            Only approved members can view posts, interact, and share updates in c/{community.name}.
+                        </p>
+                        <JoinCommunityButton
+                            communityId={community.id}
+                            initialState={existingRequest ? (existingRequest === "PENDING" ? "PENDING" : "JOIN") : "JOIN"}
+                            isPrivate={true}
+                        />
+                    </div>
+                ) : (
+                    <>
+                        {/* Create Post Area */}
+                        {session ? (
+                            isMember || isAdmin ? (
+                                <CreatePostForm communityId={community.id} />
+                            ) : (
+                                <div className="glass-panel p-6 text-center border-dashed">
+                                    <p className="text-slate-400 font-medium mb-3">You must join to post.</p>
+                                    <JoinCommunityButton communityId={community.id} initialState="JOIN" isPrivate={false} />
+                                </div>
+                            )
+                        ) : (
+                            <div className="glass-panel p-6 text-center">
+                                <p className="text-slate-400">Please log in to post in this community.</p>
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-between mt-8 mb-4">
+                            <h3 className="font-bold text-lg text-white">Community Feed</h3>
+                        </div>
+
+                        {/* Posts Feed */}
+                        <div className="space-y-4">
+                            {community.posts.length === 0 ? (
+                                <div className="glass-panel p-12 text-center flex flex-col items-center justify-center border-dashed">
+                                    <Info className="w-12 h-12 text-surface-100 mb-4" />
+                                    <h4 className="text-lg font-bold text-white mb-2">No posts yet</h4>
+                                    <p className="text-slate-400 text-sm max-w-sm">
+                                        Be the first to share something with c/{community.name}!
+                                    </p>
+                                </div>
+                            ) : (
+                                community.posts.map(post => (
+                                    <PostCard key={post.id} post={post} />
+                                ))
+                            )}
+                        </div>
+                    </>
+                )}
 
             </div>
 
@@ -129,17 +170,33 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
                             </div>
                         </div>
                         <div className="flex items-center gap-3 text-slate-300">
-                            <ShieldCheck className="w-5 h-5 text-brand-500" />
+                            {community.isPrivate ? (
+                                <Lock className="w-5 h-5 text-yellow-500" />
+                            ) : (
+                                <ShieldCheck className="w-5 h-5 text-brand-500" />
+                            )}
                             <div>
-                                <div className="font-bold text-white">Verified</div>
-                                <div className="text-xs text-slate-500">Community Status</div>
+                                <div className="font-bold text-white">{community.isPrivate ? 'Private' : 'Public'}</div>
+                                <div className="text-xs text-slate-500">Access Level</div>
                             </div>
                         </div>
                     </div>
 
-                    <button className="w-full mt-6 py-2.5 bg-surface-50 hover:bg-surface-100 text-white font-bold rounded-xl transition-colors border border-surface-100">
-                        Joined
-                    </button>
+                    <div className="mt-6">
+                        {session ? (
+                            isMember ? (
+                                <div className="w-full py-2.5 bg-brand-500/10 border border-brand-500 text-brand-500 font-bold rounded-xl flex items-center justify-center gap-2">
+                                    <CheckCircle className="w-4 h-4" /> Joined
+                                </div>
+                            ) : (
+                                <JoinCommunityButton
+                                    communityId={community.id}
+                                    initialState={existingRequest ? (existingRequest === "PENDING" ? "PENDING" : "JOIN") : "JOIN"}
+                                    isPrivate={community.isPrivate}
+                                />
+                            )
+                        ) : null}
+                    </div>
                 </div>
             </div>
 

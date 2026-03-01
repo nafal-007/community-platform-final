@@ -6,6 +6,7 @@ import { LogOut, Bell, Search, Home, MessageSquare, Settings } from "lucide-reac
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Logo } from "@/components/ui/Logo";
+import NotificationsDropdown from "./NotificationsDropdown";
 
 export function Topbar() {
     const { data: session, status } = useSession();
@@ -18,8 +19,12 @@ export function Topbar() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            const cleanQuery = searchQuery.trim().replace('@', '');
-            router.push(`/u/${cleanQuery}`);
+            if (searchQuery.trim().startsWith("@")) {
+                const cleanQuery = searchQuery.trim().replace("@", "");
+                router.push(`/u/${cleanQuery}`);
+            } else {
+                router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+            }
             setSearchQuery("");
         }
     };
@@ -31,7 +36,7 @@ export function Topbar() {
                 {/* Left: Branding & Search */}
                 <div className="flex items-center gap-8 w-1/3">
                     <Link href="/" className="flex items-center gap-2 transition-transform hover:opacity-90">
-                        <Logo iconSize="w-8 h-8" textSize="text-3xl" dark={true} />
+                        <Logo iconSize="w-8 h-8" textSize="text-3xl" />
                     </Link>
 
                     <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-sm relative">
@@ -51,10 +56,10 @@ export function Topbar() {
                     <Link href="/" className="p-3 text-brand-500 bg-brand-500/10 rounded-xl transition-all">
                         <Home className="w-5 h-5" />
                     </Link>
-                    <Link href="/communities" className="p-3 text-slate-400 hover:text-white hover:bg-surface-100 rounded-xl transition-all">
+                    <Link href="/communities" className="p-3 text-slate-500 hover:text-surface-900 hover:bg-surface-100 rounded-xl transition-all">
                         <MessageSquare className="w-5 h-5" />
                     </Link>
-                    <Link href="/settings" className="p-3 text-slate-400 hover:text-white hover:bg-surface-100 rounded-xl transition-all">
+                    <Link href="/settings" className="p-3 text-slate-500 hover:text-surface-900 hover:bg-surface-100 rounded-xl transition-all">
                         <Settings className="w-5 h-5" />
                     </Link>
                 </div>
@@ -65,21 +70,18 @@ export function Topbar() {
                         <div className="w-8 h-8 rounded-full bg-surface-100 animate-pulse"></div>
                     ) : session ? (
                         <div className="flex items-center gap-4">
-                            <button className="relative p-2 text-slate-400 hover:text-white transition-colors rounded-xl hover:bg-surface-100">
-                                <Bell className="w-5 h-5" />
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-500 rounded-full"></span>
-                            </button>
+                            <NotificationsDropdown />
 
                             <div className="flex items-center gap-3 pl-4 border-l border-surface-100">
                                 {session.user?.image ? (
                                     <img src={session.user.image} alt="Avatar" className="w-9 h-9 rounded-full ring-2 ring-surface-50 shadow-sm" />
                                 ) : (
-                                    <div className="w-9 h-9 rounded-full bg-surface-800 flex items-center justify-center text-white font-bold shadow-sm border border-surface-100">
+                                    <div className="w-9 h-9 rounded-full bg-surface-100 flex items-center justify-center text-surface-900 font-bold shadow-sm border border-surface-100">
                                         {session.user?.name?.[0] || 'U'}
                                     </div>
                                 )}
                                 <div className="hidden md:block text-left mr-2">
-                                    <p className="text-sm font-bold text-white leading-tight">{session.user?.name}</p>
+                                    <p className="text-sm font-bold text-surface-900 leading-tight">{session.user?.name}</p>
                                     <p className="text-[11px] text-brand-500 font-medium tracking-wide">{(session.user as any)?.username || `@${session.user?.name?.replace(/\s+/g, '').toLowerCase()}`}</p>
                                 </div>
                                 <button
@@ -93,7 +95,7 @@ export function Topbar() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white px-3 py-2 transition-colors">
+                            <Link href="/login" className="text-sm font-medium text-slate-500 hover:text-surface-900 px-3 py-2 transition-colors">
                                 Log in
                             </Link>
                             <Link href="/register" className="text-sm font-bold bg-brand-500 hover:bg-brand-600 text-black px-5 py-2 rounded-xl transition-all">

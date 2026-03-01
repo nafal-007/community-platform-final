@@ -50,7 +50,7 @@ export function Sidebar() {
                             <span>{initial}</span>
                         )}
                     </div>
-                    <h2 className="text-sm font-bold text-white group-hover:text-brand-500 transition-colors">
+                    <h2 className="text-sm font-bold text-surface-900 group-hover:text-brand-500 transition-colors">
                         {user?.name || "Guest User"}
                     </h2>
                     <p className="text-xs text-brand-500 font-medium mb-4">{user?.username || "@guest"}</p>
@@ -58,11 +58,11 @@ export function Sidebar() {
 
                 <div className="flex w-full justify-between px-2 text-center">
                     <div>
-                        <p className="font-bold text-white text-sm">--</p>
+                        <p className="font-bold text-surface-900 text-sm">--</p>
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Posts</p>
                     </div>
                     <div>
-                        <p className="font-bold text-white text-sm">--</p>
+                        <p className="font-bold text-surface-900 text-sm">--</p>
                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Followers</p>
                     </div>
                 </div>
@@ -79,7 +79,7 @@ export function Sidebar() {
                                 "flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 group",
                                 isActive
                                     ? "bg-brand-500 text-black shadow-sm"
-                                    : "text-slate-400 hover:bg-surface-100 hover:text-white"
+                                    : "text-slate-500 hover:bg-surface-100 hover:text-surface-900"
                             )}
                         >
                             <item.icon className={cn(

@@ -33,3 +33,35 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ message: "Internal server error" }, { status: 500 });
     }
 }
+export async function GET(req: NextRequest) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const search = searchParams.get("search");
+
+        if (!search) {
+            return NextResponse.json([]);
+        }
+
+        const users = await prisma.user.findMany({
+            where: {
+                OR: [
+                    { username: { contains: search } },
+                    { name: { contains: search } }
+                ]
+            },
+            select: {
+                id: true,
+                username: true,
+                name: true,
+                image: true,
+                bio: true
+            },
+            take: 20
+        });
+
+        return NextResponse.json(users);
+    } catch (error) {
+        console.error("User search error:", error);
+        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    }
+}

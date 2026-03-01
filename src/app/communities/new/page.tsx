@@ -20,6 +20,7 @@ export default function CreateCommunityPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [isPrivate, setIsPrivate] = useState(false);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -31,6 +32,7 @@ export default function CreateCommunityPage() {
             name: formData.get("name") as string,
             description: formData.get("description") as string,
             category: formData.get("category") as string,
+            isPrivate,
         };
 
         try {
@@ -120,6 +122,22 @@ export default function CreateCommunityPage() {
                                 <option key={cat} value={cat}>{cat}</option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="flex items-center gap-4 py-4 border-t border-surface-100">
+                        <div className="flex-1">
+                            <h4 className="font-bold text-white mb-1">Make Community Private</h4>
+                            <p className="text-sm text-slate-400">Only approved members can view posts and participate.</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={isPrivate}
+                                onChange={(e) => setIsPrivate(e.target.checked)}
+                            />
+                            <div className="w-14 h-7 bg-surface-100 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-500"></div>
+                        </label>
                     </div>
 
                     <div className="pt-6 border-t border-surface-100 flex justify-end">

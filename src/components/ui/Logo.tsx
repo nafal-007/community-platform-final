@@ -11,10 +11,7 @@ export function Logo({
     className = "",
     iconSize = "w-8 h-8",
     textSize = "text-2xl",
-    dark = true
 }: LogoProps) {
-    const fillColor = dark ? "#FFFFFF" : "#101113";
-
     return (
         <div className={`flex items-center gap-3 ${className}`}>
             <svg
@@ -30,8 +27,8 @@ export function Logo({
                 </g>
             </svg>
             <span
-                className={`font-black tracking-tighter ${textSize} select-none leading-none`}
-                style={{ color: fillColor, letterSpacing: '-0.05em', marginBottom: '-0.1em' }}
+                className={`font-black tracking-tighter ${textSize} select-none leading-none text-surface-900`}
+                style={{ letterSpacing: '-0.05em', marginBottom: '-0.1em' }}
             >
                 us
             </span>

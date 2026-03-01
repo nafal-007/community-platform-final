@@ -33,6 +33,9 @@ model User {
   communities    CommunityMember[]
   notes          DailyNote[]
   timeTracker    TimeTracker? 
+  usages         DailyUsage[]
+  joinRequests   JoinRequest[]
+  notifications  Notification[]
 
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -80,9 +83,11 @@ model Community {
   name        String   @unique
   description String
   category    String   // e.g., Jobs, News, Education, Emergencies
+  isPrivate   Boolean  @default(false)
   
   members     CommunityMember[]
   posts       Post[]
+  joinRequests JoinRequest[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -92,6 +97,7 @@ model CommunityMember {
   id          String   @id @default(uuid())
   userId      String
   communityId String
+  role        String   @default("MEMBER") // "MEMBER" or "ADMIN"
   
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
@@ -106,6 +112,7 @@ model Post {
   id          String   @id @default(uuid())
   title       String
   content     String
+  imageUrl    String?
   
   validityScore Int      @default(0) // AI or user-driven scoring to prevent misinformation
   isEmergency   Boolean  @default(false)
@@ -168,4 +175,44 @@ model TimeTracker {
   lastUpdated    DateTime @default(now())
   
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model JoinRequest {
+  id          String   @id @default(uuid())
+  userId      String
+  communityId String
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, communityId]) // One active request per user, per community
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   // Receiver of the notification
+  type      String   // E.g., 'JOIN_REQUEST', 'REQUEST_ACCEPTED', 'SYSTEM_ALERT'
+  message   String
+  link      String?  // Optional URL to redirect to
+  isRead    Boolean  @default(false)
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}
+
+model DailyUsage {
+  id           String   @id @default(cuid())
+  userId       String
+  date         DateTime // Stored as the start of the UTC day (00:00:00)
+  secondsSpent Int      @default(0)
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensure one record per user per day
+  @@unique([userId, date])
 }
