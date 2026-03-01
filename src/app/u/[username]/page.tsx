@@ -6,6 +6,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { EditProfileWrapper } from "@/components/profile/EditProfileWrapper";
 
+export const dynamic = "force-dynamic";
+
 export default async function UserProfilePage({ params }: { params: Promise<{ username: string }> }) {
     const resolvedParams = await params;
     // The username in the URL won't have the '@' prefix, so we add it back to match the DB

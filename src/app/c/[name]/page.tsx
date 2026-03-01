@@ -7,6 +7,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import JoinCommunityButton from "@/components/community/JoinCommunityButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function CommunityPage({ params }: { params: Promise<{ name: string }> }) {
     const session = await getServerSession(authOptions);
     const resolvedParams = await params;

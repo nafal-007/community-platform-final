@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Users, PlusCircle, ArrowRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function CommunitiesPage() {
     const communities = await prisma.community.findMany({
         include: {
