@@ -7,9 +7,11 @@ import { EditProfileModal } from "./EditProfileModal";
 interface EditProfileWrapperProps {
     currentBio: string | null;
     currentImage: string | null;
+    currentName: string | null;
+    currentUsername: string;
 }
 
-export function EditProfileWrapper({ currentBio, currentImage }: EditProfileWrapperProps) {
+export function EditProfileWrapper({ currentBio, currentImage, currentName, currentUsername }: EditProfileWrapperProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     return (
@@ -27,6 +29,8 @@ export function EditProfileWrapper({ currentBio, currentImage }: EditProfileWrap
                 onClose={() => setIsEditModalOpen(false)}
                 currentBio={currentBio}
                 currentImage={currentImage}
+                currentName={currentName}
+                currentUsername={currentUsername}
             />
         </>
     );

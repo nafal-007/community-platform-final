@@ -7,9 +7,24 @@ export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
 
-        // Fetch all posts with author and community info
-        // In a real app, we might filter by joined communities, but for this project a "Global Feed" is better for discoverability
+        const userId = session?.user?.id;
+
+        // Fetch posts balancing global discoverability with private community privacy
         const posts = await prisma.post.findMany({
+            where: {
+                OR: [
+                    {
+                        community: { isPrivate: false }
+                    },
+                    {
+                        community: {
+                            members: {
+                                some: { userId: userId || "unauthenticated" }
+                            }
+                        }
+                    }
+                ]
+            },
             include: {
                 author: {
                     select: {

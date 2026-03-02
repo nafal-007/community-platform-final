@@ -1,11 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { Users, Info, ShieldCheck, Lock, CheckCircle, Clock } from "lucide-react";
+import { Users, Info, ShieldCheck, Lock, CheckCircle, Clock, Settings } from "lucide-react";
 import CreatePostForm from "@/components/post/CreatePostForm";
+import Link from "next/link";
 import PostCard from "@/components/post/PostCard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import JoinCommunityButton from "@/components/community/JoinCommunityButton";
+import LeaveCommunityButton from "@/components/community/LeaveCommunityButton";
 
 export const dynamic = "force-dynamic";
 
@@ -76,8 +78,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
                 {/* Community Header Mobile (Hidden on Desktop) */}
                 <div className="lg:hidden glass-panel p-6 mb-6 border-l-4 border-l-brand-500 rounded-none">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 bg-surface-100 rounded-xl flex items-center justify-center text-brand-500 font-bold text-xl">
-                            {community.name[0].toUpperCase()}
+                        <div className="w-12 h-12 bg-surface-100 rounded-xl overflow-hidden flex items-center justify-center text-brand-500 font-bold text-xl relative">
+                            {community.avatarUrl ? (
+                                <img src={community.avatarUrl} alt={community.name} className="w-full h-full object-cover" />
+                            ) : (
+                                community.name[0].toUpperCase()
+                            )}
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -151,8 +157,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
             {/* Right Sidebar - Community Info */}
             <div className="hidden lg:block lg:col-span-1 space-y-6">
                 <div className="glass-panel p-6 sticky top-24">
-                    <div className="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-black font-bold text-3xl mb-4 shadow-lg shadow-brand-500/20">
-                        {community.name[0].toUpperCase()}
+                    <div className="w-16 h-16 bg-brand-500 rounded-2xl overflow-hidden flex items-center justify-center text-black font-bold text-3xl mb-4 shadow-lg shadow-brand-500/20 relative">
+                        {community.avatarUrl ? (
+                            <img src={community.avatarUrl} alt={community.name} className="w-full h-full object-cover" />
+                        ) : (
+                            community.name[0].toUpperCase()
+                        )}
                     </div>
                     <h2 className="text-xl font-bold text-white mb-1">c/{community.name}</h2>
                     <div className="inline-block px-2.5 py-1 bg-surface-100 text-brand-500 text-xs font-bold rounded-lg uppercase tracking-wide mb-4">
@@ -184,12 +194,10 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
                         </div>
                     </div>
 
-                    <div className="mt-6">
+                    <div className="mt-6 space-y-3">
                         {session ? (
                             isMember ? (
-                                <div className="w-full py-2.5 bg-brand-500/10 border border-brand-500 text-brand-500 font-bold rounded-xl flex items-center justify-center gap-2">
-                                    <CheckCircle className="w-4 h-4" /> Joined
-                                </div>
+                                <LeaveCommunityButton communityId={community.id} />
                             ) : (
                                 <JoinCommunityButton
                                     communityId={community.id}
@@ -198,7 +206,14 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
                                 />
                             )
                         ) : null}
+
+                        {isAdmin && (
+                            <Link href={`/c/${encodeURIComponent(decodedName)}/settings`} className="w-full py-2.5 bg-surface-100 hover:bg-surface-200 text-brand-500 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors">
+                                <Settings className="w-4 h-4" /> Admin Settings
+                            </Link>
+                        )}
                     </div>
+
                 </div>
             </div>
 

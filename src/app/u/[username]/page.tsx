@@ -77,7 +77,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
                                 </div>
 
                                 {isOwner && (
-                                    <EditProfileWrapper currentBio={user.bio} currentImage={user.image} />
+                                    <EditProfileWrapper currentBio={user.bio} currentImage={user.image} currentName={user.name} currentUsername={user.username!} />
                                 )}
                             </div>
 

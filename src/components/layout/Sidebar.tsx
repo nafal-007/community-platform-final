@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -30,6 +31,25 @@ const navItems = [
 export function Sidebar() {
     const pathname = usePathname();
     const { data: session } = useSession();
+    const [metrics, setMetrics] = useState({ communitiesCount: 0, totalScore: 0 });
+
+    useEffect(() => {
+        const fetchMetrics = async () => {
+            if (session?.user) {
+                try {
+                    const res = await fetch('/api/users/metrics');
+                    if (res.ok) {
+                        const data = await res.json();
+                        setMetrics(data);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch metrics:', error);
+                }
+            }
+        };
+
+        fetchMetrics();
+    }, [session]);
 
     // Hide sidebar on auth pages
     if (pathname === '/login' || pathname === '/register') return null;
@@ -58,12 +78,12 @@ export function Sidebar() {
 
                 <div className="flex w-full justify-between px-2 text-center">
                     <div>
-                        <p className="font-bold text-surface-900 text-sm">--</p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Posts</p>
+                        <p className="font-bold text-surface-900 text-sm">{metrics.communitiesCount}</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Communities</p>
                     </div>
                     <div>
-                        <p className="font-bold text-surface-900 text-sm">--</p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Followers</p>
+                        <p className="font-bold text-surface-900 text-sm">{metrics.totalScore}</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Score</p>
                     </div>
                 </div>
             </div>

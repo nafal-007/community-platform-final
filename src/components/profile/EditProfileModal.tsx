@@ -9,11 +9,15 @@ interface EditProfileModalProps {
     onClose: () => void;
     currentBio: string | null;
     currentImage: string | null;
+    currentName: string | null;
+    currentUsername: string;
 }
 
-export function EditProfileModal({ isOpen, onClose, currentBio, currentImage }: EditProfileModalProps) {
+export function EditProfileModal({ isOpen, onClose, currentBio, currentImage, currentName, currentUsername }: EditProfileModalProps) {
     const router = useRouter();
     const [bio, setBio] = useState(currentBio || "");
+    const [name, setName] = useState(currentName || "");
+    const [username, setUsername] = useState(currentUsername || "");
     const [imagePreview, setImagePreview] = useState<string | null>(currentImage);
     const [file, setFile] = useState<File | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -70,7 +74,9 @@ export function EditProfileModal({ isOpen, onClose, currentBio, currentImage }: 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     bio: bio,
-                    image: avatarUrl
+                    image: avatarUrl,
+                    name: name,
+                    username: username
                 }),
             });
 
@@ -128,6 +134,40 @@ export function EditProfileModal({ isOpen, onClose, currentBio, currentImage }: 
                 </div>
                 <p className="text-xs text-brand-500 font-bold mb-6">Click to change Avatar (Max 5MB)</p>
 
+                {/* Name & Username Inputs */}
+                <div className="w-full flex gap-4 mb-4">
+                    <div className="flex-1 space-y-2">
+                        <label className="text-sm font-bold text-white block">Display Name</label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Your Name"
+                            maxLength={50}
+                            className="w-full bg-black border border-surface-100 text-white rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm"
+                        />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                        <label className="text-sm font-bold text-white block flex justify-between">
+                            Username
+                            <span className="text-xs text-slate-500 font-normal">20-day limit</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => {
+                                let val = e.target.value;
+                                if (!val.startsWith("@")) val = "@" + val.replace(/@/g, "");
+                                val = val.toLowerCase().replace(/[^a-z0-9_@.]/g, "");
+                                setUsername(val);
+                            }}
+                            placeholder="@username"
+                            maxLength={20}
+                            className="w-full bg-black border border-surface-100 text-white rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm"
+                        />
+                    </div>
+                </div>
+
                 {/* Bio Input */}
                 <div className="w-full space-y-2 mb-6">
                     <label className="text-sm font-bold text-white block">Short Bio</label>
@@ -136,7 +176,7 @@ export function EditProfileModal({ isOpen, onClose, currentBio, currentImage }: 
                         onChange={(e) => setBio(e.target.value)}
                         placeholder="Tell the community about yourself..."
                         maxLength={160}
-                        className="w-full bg-surface-900 border border-surface-100 text-white rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm resize-none h-24 placeholder:text-slate-600"
+                        className="w-full bg-black border border-surface-100 text-white rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm resize-none h-24 placeholder:text-slate-600"
                     />
                     <div className="text-right text-xs text-slate-500">{bio.length}/160</div>
                 </div>

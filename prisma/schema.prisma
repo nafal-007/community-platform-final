@@ -22,6 +22,7 @@ model User {
 
   role           String    @default("USER")
   warningCount   Int       @default(0) // Warnings for misinformation or limits
+  lastUsernameChange DateTime?
   
   accounts       Account[]
   sessions       Session[]
@@ -84,6 +85,7 @@ model Community {
   description String
   category    String   // e.g., Jobs, News, Education, Emergencies
   isPrivate   Boolean  @default(false)
+  avatarUrl   String?
   
   members     CommunityMember[]
   posts       Post[]
