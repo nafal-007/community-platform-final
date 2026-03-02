@@ -65,7 +65,9 @@ export default async function CommunityPage({ params }: { params: Promise<{ name
     }
 
     const isMember = session ? community.members.length > 0 : false;
-    const isAdmin = session?.user?.role === "ADMIN";
+    const isPlatformAdmin = session?.user?.role === "ADMIN";
+    const isCommunityAdmin = isMember ? community.members[0].role === "ADMIN" : false;
+    const isAdmin = isPlatformAdmin || isCommunityAdmin;
     const hasAccess = !community.isPrivate || isMember || isAdmin;
     const existingRequest = community.joinRequests?.[0]?.status || null;
 
